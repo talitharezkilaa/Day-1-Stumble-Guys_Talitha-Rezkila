@@ -64,8 +64,11 @@
     input::placeholder{color:#c3adb7}
     .btn-submit{border:0;background:var(--pink-500);color:white;border-radius:12px;padding:12px 15px;font-size:12px;font-weight:700;box-shadow:0 6px 14px rgba(217,117,160,.2);transition:.2s}
     .btn-submit:hover{background:var(--rose);transform:translateY(-1px)}
+    .btn-cancel{border:1px solid var(--pink-200);background:white;color:var(--rose);border-radius:12px;padding:11px 15px;font-size:12px;font-weight:700}
+    .btn-edit{border:0;background:transparent;color:#d975a0;border-radius:8px;padding:5px;font-size:14px}
+    .btn-edit:hover{background:#fff0f4;color:#a95779}
     .task-list{display:grid;gap:10px}
-    .task-item{border:1px solid var(--line);background:#fffdfd;border-radius:14px;padding:13px 13px;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:.2s}
+    .task-item{border:1px solid var(--line);background:#fffdfd;border-radius:14px;padding:13px;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:.2s}
     .task-item:hover{border-color:var(--pink-300);transform:translateY(-1px)}
     .task-item.completed{background:#fff9fc;opacity:.68}
     .task-item.completed .task-title{text-decoration:line-through;color:#ad9aa3}
@@ -138,13 +141,14 @@
       </div>
       <div class="content-grid">
         <div class="card">
-          <div class="card-heading"><h2>Add a new task</h2><span class="tiny-label">♡ let's do this</span></div>
+          <div class="card-heading"><h2 id="formHeading">Add a new task</h2><span class="tiny-label">♡ let's do this</span></div>
           <form class="form-group" id="taskForm">
             <div class="field"><label for="taskTitle">Task name</label><input id="taskTitle" type="text" placeholder="e.g. Finish Matdis assignment" maxlength="100" required></div>
             <div class="field"><label for="taskSubject">Subject / course</label><input id="taskSubject" type="text" placeholder="e.g. Matematika Diskrit"></div>
             <div class="field"><label for="taskDate">Deadline</label><input id="taskDate" type="date" required></div>
             <div class="field"><label for="taskPriority">Priority</label><select id="taskPriority"><option value="Santai">Santai · low</option><option value="Sedang" selected>Sedang · medium</option><option value="Segera">Segera · high</option></select></div>
-            <button class="btn-submit" type="submit">＋ Save my task</button>
+            <button class="btn-submit" type="submit" id="submitTaskButton">＋ Save my task</button>
+            <button class="btn-cancel" type="button" id="cancelEditButton" hidden>Cancel edit</button>
           </form>
           <div class="progress-wrap"><div class="progress-label"><span>Study progress</span><strong id="progressText">0%</strong></div><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div></div>
         </div>
@@ -171,7 +175,13 @@
 </div>
 <script>
   let tasks = [];
-  try { tasks = JSON.parse(localStorage.getItem('studylife_tasks')) || []; } catch (error) { tasks = []; }
+  let editingTaskId = null;
+
+  try {
+    tasks = JSON.parse(localStorage.getItem('studylife_tasks')) || [];
+  } catch (error) {
+    tasks = [];
+  }
 
   const pageInfo = {
     dashboard: ['Your Study Dashboard', 'Atur tugasmu, pelan-pelan sampai semuanya selesai.'],
@@ -194,12 +204,22 @@
     render();
   }
 
+  function resetTaskForm() {
+    document.getElementById('taskForm').reset();
+    document.getElementById('taskPriority').value = 'Sedang';
+    document.getElementById('formHeading').textContent = 'Add a new task';
+    document.getElementById('submitTaskButton').textContent = '＋ Save my task';
+    document.getElementById('cancelEditButton').hidden = true;
+    editingTaskId = null;
+  }
+
   document.getElementById('todayDate').textContent = '♡ ' + new Date().toLocaleDateString('id-ID', {
     weekday:'long', day:'numeric', month:'long', year:'numeric'
   });
 
   document.getElementById('taskForm').addEventListener('submit', function(event) {
     event.preventDefault();
+
     const title = document.getElementById('taskTitle').value.trim();
     const subject = document.getElementById('taskSubject').value.trim() || 'Umum';
     const date = document.getElementById('taskDate').value;
@@ -210,10 +230,49 @@
       return;
     }
 
-    tasks.push({ id: Date.now(), title, subject, date, priority, completed: false });
-    this.reset();
-    document.getElementById('taskPriority').value = 'Sedang';
+    if (editingTaskId !== null) {
+      tasks = tasks.map(task => {
+        if (task.id === editingTaskId) {
+          return { ...task, title, subject, date, priority };
+        }
+        return task;
+      });
+    } else {
+      tasks.push({
+        id: Date.now(),
+        title,
+        subject,
+        date,
+        priority,
+        completed: false
+      });
+    }
+
+    resetTaskForm();
     saveAndRender();
+  });
+
+  function editTask(id) {
+    const task = tasks.find(item => item.id === id);
+    if (!task) return;
+
+    editingTaskId = id;
+    document.getElementById('taskTitle').value = task.title;
+    document.getElementById('taskSubject').value = task.subject || '';
+    document.getElementById('taskDate').value = task.date;
+    document.getElementById('taskPriority').value = task.priority;
+
+    document.getElementById('formHeading').textContent = 'Edit your task';
+    document.getElementById('submitTaskButton').textContent = '♡ Update my task';
+    document.getElementById('cancelEditButton').hidden = false;
+
+    const dashboardButton = document.querySelector('.nav-item');
+    switchTab('dashboard', dashboardButton);
+    document.getElementById('taskTitle').focus();
+  }
+
+  document.getElementById('cancelEditButton').addEventListener('click', function() {
+    resetTaskForm();
   });
 
   function toggleTask(id) {
@@ -223,6 +282,11 @@
 
   function deleteTask(id) {
     if (!confirm('Hapus tugas ini dari planner?')) return;
+
+    if (editingTaskId === id) {
+      resetTaskForm();
+    }
+
     tasks = tasks.filter(task => task.id !== id);
     saveAndRender();
   }
@@ -241,8 +305,9 @@
 
   function createTaskHTML(task) {
     const title = escapeHTML(task.title);
-    const subject = escapeHTML(task.subject);
+    const subject = escapeHTML(task.subject || 'Umum');
     const priority = ['Santai','Sedang','Segera'].includes(task.priority) ? task.priority : 'Sedang';
+
     return `
       <div class="task-item ${task.completed ? 'completed' : ''}">
         <div class="task-left">
@@ -254,6 +319,7 @@
         </div>
         <div class="task-right">
           <span class="tag tag-${priority}">${priority}</span>
+          <button class="btn-edit" aria-label="Edit tugas" title="Edit task" onclick="editTask(${Number(task.id)})">✎</button>
           <button class="btn-delete" aria-label="Hapus tugas" title="Delete task" onclick="deleteTask(${Number(task.id)})">♡</button>
         </div>
       </div>`;
@@ -283,18 +349,21 @@
     const search = (document.getElementById('searchTask')?.value || '').toLowerCase();
     const priorityFilter = document.getElementById('filterPriority')?.value || '';
     const statusFilter = document.getElementById('filterStatus')?.value || '';
+
     const filtered = sortedTasks.filter(task => {
       const matchesSearch = (task.title + ' ' + task.subject).toLowerCase().includes(search);
       const matchesPriority = !priorityFilter || task.priority === priorityFilter;
       const matchesStatus = !statusFilter || (statusFilter === 'done' ? task.completed : !task.completed);
       return matchesSearch && matchesPriority && matchesStatus;
     });
+
     document.getElementById('allTaskList').innerHTML = filtered.length
       ? filtered.map(createTaskHTML).join('')
       : emptyMessage(total ? 'Tidak ada tugas yang cocok dengan pencarianmu.' : 'Belum ada tugas tersimpan.');
 
     const subjectsContainer = document.getElementById('subjectsContainer');
     subjectsContainer.innerHTML = '';
+
     if (!tasks.length) {
       subjectsContainer.innerHTML = emptyMessage('Mata kuliahmu akan muncul di sini setelah kamu menambahkan tugas.');
       return;
