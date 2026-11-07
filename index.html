@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudentPlanner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-bg: #1E293B;
+            --sidebar-text: #94A3B8;
+            --sidebar-active: #38BDF8;
+            --bg-main: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --primary: #0284C7;
+            --primary-hover: #0369A1;
+            --text-dark: #0F172A;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --success: #10B981;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Navigasi */
+        aside {
+            width: 240px;
+            background: var(--sidebar-bg);
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .brand {
+            color: #FFFFFF;
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 12px;
+        }
+
+        .nav-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: var(--sidebar-text);
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--sidebar-active);
+        }
+
+        /* Main Content Layout */
+        main {
+            flex: 1;
+            padding: 32px 40px;
+            overflow-y: auto;
+        }
+
+        header {
+            margin-bottom: 24px;
+        }
+
+        header h1 {
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        /* Dashboard Summary Cards */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .stat-card .title {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        /* Form & Task List Area */
+        .content-section {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 14px;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+        }
+
+        .btn-submit {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-submit:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Task Items */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #FFFFFF;
+        }
+
+        .task-item.completed {
+            background: #F8FAFC;
+            opacity: 0.6;
+        }
+
+        .task-item.completed .task-title {
+            text-decoration: line-through;
+        }
+
+        .task-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .task-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .task-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .task-title {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .task-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            gap: 10px;
+        }
+
+        .tag {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .tag-Tinggi { background: #FEE2E2; color: #991B1B; }
+        .tag-Sedang { background: #FEF3C7; color: #92400E; }
+        .tag-Rendah { background: #D1FAE5; color: #065F46; }
+
+        .btn-delete {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .btn-delete:hover {
+            color: var(--danger);
+            background: #FEE2E2;
+        }
+
+        .subject-block {
+            margin-bottom: 24px;
+        }
+
+        .subject-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        @media (max-width: 900px) {
+            body { flex-direction: column; }
+            aside { width: 100%; }
+            .content-section { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Dashboard -->
+    <aside>
+        <div class="brand">📅 StudyLife</div>
+        <ul class="nav-list">
+            <li class="nav-item active" onclick="switchTab('dashboard', this)">📊 Dashboard</li>
+            <li class="nav-item" onclick="switchTab('all-tasks', this)">📝 All Tasks</li>
+            <li class="nav-item" onclick="switchTab('subjects', this)">📚 Subjects</li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main>
+        <!-- TAB 1: DASHBOARD -->
+        <div id="view-dashboard" class="view-section active">
+            <header>
+                <h1>Dashboard Planner</h1>
+                <p>Selamat datang kembali! Ini ringkasan tugas dan deadline kamu.</p>
+            </header>
+
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <span class="title">Total Tugas</span>
+                    <span class="value" id="statTotal">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="title">Belum Selesai</span>
+                    <span class="value" id="statPending" style="color: var(--warning);">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="title">Selesai</span>
+                    <span class="value" id="statDone" style="color: var(--success);">0</span>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <!-- Form Input -->
+                <div class="card">
+                    <h2>➕ Tambah Tugas Baru</h2>
+                    <div class="form-group">
+                        <div>
+                            <label style="font-size: 12px; font-weight:600; color:var(--text-muted)">Nama Tugas</label>
+                            <input type="text" id="taskTitle" placeholder="Misal: Project Matdis" />
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; font-weight:600; color:var(--text-muted)">Mata Kuliah</label>
+                            <input type="text" id="taskSubject" placeholder="Misal: Matdis" />
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; font-weight:600; color:var(--text-muted)">Deadline</label>
+                            <input type="date" id="taskDate" />
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; font-weight:600; color:var(--text-muted)">Prioritas</label>
+                            <select id="taskPriority">
+                                <option value="Santai">Santai</option>
+                                <option value="Sedang" selected>Sedang</option>
+                                <option value="Segera">Segera</option>
+                            </select>
+                        </div>
+                        <button class="btn-submit" onclick="addTask()">Simpan Tugas</button>
+                    </div>
+                </div>
+
+                <!-- Recent Task List -->
+                <div class="card">
+                    <h2>📋 Ringkasan Tugas</h2>
+                    <div class="task-list" id="dashboardTaskList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: ALL TASKS -->
+        <div id="view-all-tasks" class="view-section">
+            <header>
+                <h1>All Tasks</h1>
+                <p>Semua daftar tugas perkuliahan kamu ada di sini.</p>
+            </header>
+            <div class="card">
+                <h2>📋 Semua Tugas</h2>
+                <div class="task-list" id="allTaskList"></div>
+            </div>
+        </div>
+
+        <!-- TAB 3: SUBJECTS -->
+        <div id="view-subjects" class="view-section">
+            <header>
+                <h1>Subjects Overview</h1>
+                <p>Tugas yang dikelompokkan berdasarkan mata kuliah/subjek.</p>
+            </header>
+            <div id="subjectsContainer"></div>
+        </div>
+    </main>
+
+    <script>
+        let tasks = JSON.parse(localStorage.getItem('studylife_tasks')) || [];
+
+        function switchTab(tabName, el) {
+            // Update navigasi sidebar
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            el.classList.add('active');
+
+            // Update tampilan halaman
+            document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active'));
+            document.getElementById(`view-${tabName}`).classList.add('active');
+
+            render();
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('studylife_tasks', JSON.stringify(tasks));
+            render();
+        }
+
+        function addTask() {
+            const title = document.getElementById('taskTitle').value.trim();
+            const subject = document.getElementById('taskSubject').value.trim() || 'Umum';
+            const date = document.getElementById('taskDate').value;
+            const priority = document.getElementById('taskPriority').value;
+
+            if (!title || !date) {
+                alert('Nama tugas dan deadline wajib diisi!');
+                return;
+            }
+
+            tasks.push({
+                id: Date.now(),
+                title,
+                subject,
+                date,
+                priority,
+                completed: false
+            });
+
+            document.getElementById('taskTitle').value = '';
+            document.getElementById('taskSubject').value = '';
+            document.getElementById('taskDate').value = '';
+
+            saveAndRender();
+        }
+
+        function toggleTask(id) {
+            tasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+            saveAndRender();
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            saveAndRender();
+        }
+
+        function createTaskHTML(t) {
+            return `
+                <div class="task-item ${t.completed ? 'completed' : ''}">
+                    <div class="task-left">
+                        <input type="checkbox" class="task-checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask(${t.id})">
+                        <div class="task-meta">
+                            <span class="task-title">${t.title}</span>
+                            <div class="task-sub">
+                                <span>📖 ${t.subject}</span>
+                                <span>📅 ${t.date}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="tag tag-${t.priority}">${t.priority}</span>
+                        <button class="btn-delete" onclick="deleteTask(${t.id})">🗑️</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function render() {
+            // 1. Render Dashboard
+            document.getElementById('statTotal').innerText = tasks.length;
+            document.getElementById('statPending').innerText = tasks.filter(t => !t.completed).length;
+            document.getElementById('statDone').innerText = tasks.filter(t => t.completed).length;
+
+            const dashList = document.getElementById('dashboardTaskList');
+            if (tasks.length === 0) {
+                dashList.innerHTML = `<p style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 20px 0;">Belum ada tugas. Yuk tambah tugas pertama kamu!</p>`;
+            } else {
+                dashList.innerHTML = tasks.slice(0, 5).map(t => createTaskHTML(t)).join('');
+            }
+
+            // 2. Render All Tasks
+            const allList = document.getElementById('allTaskList');
+            if (tasks.length === 0) {
+                allList.innerHTML = `<p style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 20px 0;">Belum ada tugas tersimpan.</p>`;
+            } else {
+                allList.innerHTML = tasks.map(t => createTaskHTML(t)).join('');
+            }
+
+            // 3. Render Subjects View
+            const subjectsContainer = document.getElementById('subjectsContainer');
+            subjectsContainer.innerHTML = '';
+
+            if (tasks.length === 0) {
+                subjectsContainer.innerHTML = `<div class="card"><p style="color: var(--text-muted); font-size: 14px; text-align: center;">Belum ada mata kuliah.</p></div>`;
+            } else {
+                // Grouping berdasarkan Subject
+                const grouped = {};
+                tasks.forEach(t => {
+                    if (!grouped[t.subject]) grouped[t.subject] = [];
+                    grouped[t.subject].push(t);
+                });
+
+                for (const subject in grouped) {
+                    const block = document.createElement('div');
+                    block.className = 'card subject-block';
+                    block.innerHTML = `
+                        <div class="subject-title">📖 ${subject} (${grouped[subject].length} Tugas)</div>
+                        <div class="task-list">
+                            ${grouped[subject].map(t => createTaskHTML(t)).join('')}
+                        </div>
+                    `;
+                    subjectsContainer.appendChild(block);
+                }
+            }
+        }
+
+        render();
+    </script>
+</body>
+</html>
