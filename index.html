@@ -1,526 +1,327 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudentPlanner</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --sidebar-bg: #1E293B;
-            --sidebar-text: #94A3B8;
-            --sidebar-active: #38BDF8;
-            --bg-main: #F8FAFC;
-            --card-bg: #FFFFFF;
-            --primary: #0284C7;
-            --primary-hover: #0369A1;
-            --text-dark: #0F172A;
-            --text-muted: #64748B;
-            --border: #E2E8F0;
-            --danger: #EF4444;
-            --warning: #F59E0B;
-            --success: #10B981;
-        }
-
-        * {
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-dark);
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* Sidebar Navigasi */
-        aside {
-            width: 240px;
-            background: var(--sidebar-bg);
-            padding: 24px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .brand {
-            color: #FFFFFF;
-            font-size: 20px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 0 12px;
-        }
-
-        .nav-list {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .nav-item {
-            padding: 12px 16px;
-            border-radius: 8px;
-            color: var(--sidebar-text);
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: all 0.2s;
-        }
-
-        .nav-item:hover, .nav-item.active {
-            background: rgba(255, 255, 255, 0.08);
-            color: var(--sidebar-active);
-        }
-
-        /* Main Content Layout */
-        main {
-            flex: 1;
-            padding: 32px 40px;
-            overflow-y: auto;
-        }
-
-        header {
-            margin-bottom: 24px;
-        }
-
-        header h1 {
-            font-size: 26px;
-            font-weight: 700;
-        }
-
-        header p {
-            color: var(--text-muted);
-            font-size: 14px;
-            margin-top: 4px;
-        }
-
-        .view-section {
-            display: none;
-        }
-
-        .view-section.active {
-            display: block;
-        }
-
-        /* Dashboard Summary Cards */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 32px;
-        }
-
-        .stat-card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .stat-card .title {
-            font-size: 13px;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
-        .stat-card .value {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--text-dark);
-        }
-
-        /* Form & Task List Area */
-        .content-section {
-            display: grid;
-            grid-template-columns: 320px 1fr;
-            gap: 24px;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            padding: 24px;
-            margin-bottom: 20px;
-        }
-
-        .card h2 {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 16px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 10px 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            font-size: 14px;
-            outline: none;
-            transition: border 0.2s;
-        }
-
-        input:focus, select:focus {
-            border-color: var(--primary);
-        }
-
-        .btn-submit {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-submit:hover {
-            background: var(--primary-hover);
-        }
-
-        /* Task Items */
-        .task-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .task-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 16px;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            background: #FFFFFF;
-        }
-
-        .task-item.completed {
-            background: #F8FAFC;
-            opacity: 0.6;
-        }
-
-        .task-item.completed .task-title {
-            text-decoration: line-through;
-        }
-
-        .task-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .task-checkbox {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-
-        .task-meta {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .task-title {
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .task-sub {
-            font-size: 12px;
-            color: var(--text-muted);
-            display: flex;
-            gap: 10px;
-        }
-
-        .tag {
-            font-size: 11px;
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-weight: 600;
-        }
-
-        .tag-Tinggi { background: #FEE2E2; color: #991B1B; }
-        .tag-Sedang { background: #FEF3C7; color: #92400E; }
-        .tag-Rendah { background: #D1FAE5; color: #065F46; }
-
-        .btn-delete {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 16px;
-            padding: 4px 8px;
-            border-radius: 4px;
-        }
-
-        .btn-delete:hover {
-            color: var(--danger);
-            background: #FEE2E2;
-        }
-
-        .subject-block {
-            margin-bottom: 24px;
-        }
-
-        .subject-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 12px;
-            padding-bottom: 6px;
-            border-bottom: 2px solid var(--border);
-        }
-
-        @media (max-width: 900px) {
-            body { flex-direction: column; }
-            aside { width: 100%; }
-            .content-section { grid-template-columns: 1fr; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BloomStudy — Student Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --pink-50:#fff8fb; --pink-100:#ffedf4; --pink-200:#fbd8e6;
+      --pink-300:#f4b8d0; --pink-400:#e995b8; --pink-500:#d975a0;
+      --rose:#a95779; --ink:#604653; --muted:#a58b97;
+      --cream:#fffdfb; --line:#f2e3e9; --white:#fff;
+      --shadow:0 12px 35px rgba(169,87,121,.09);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:var(--pink-50);color:var(--ink);font-family:'DM Sans',sans-serif}
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+    .app{display:flex;min-height:100vh}
+    aside{width:248px;flex-shrink:0;background:#fff0f6;border-right:1px solid var(--line);padding:28px 18px;display:flex;flex-direction:column;gap:30px}
+    .brand{display:flex;align-items:center;gap:11px;padding:0 10px}
+    .brand-mark{width:42px;height:42px;border-radius:15px;background:var(--pink-200);display:grid;place-items:center;font-size:22px}
+    .brand-name{font-family:'Playfair Display',serif;font-size:23px;color:var(--rose);line-height:1}
+    .brand-sub{font-size:10px;letter-spacing:2px;color:var(--muted);margin-top:5px}
+    .nav-label{font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:#bd9eac;font-weight:700;padding:0 13px;margin-bottom:8px}
+    .nav-list{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+    .nav-item{border:0;background:transparent;color:#987987;width:100%;text-align:left;padding:12px 14px;border-radius:13px;display:flex;align-items:center;gap:12px;font-size:13px;font-weight:600;transition:.2s}
+    .nav-item:hover,.nav-item.active{background:white;color:var(--rose);box-shadow:0 5px 16px rgba(169,87,121,.08)}
+    .nav-icon{width:22px;text-align:center;font-size:17px}
+    .sidebar-note{margin-top:auto;background:#fff;border:1px dashed var(--pink-300);border-radius:18px;padding:17px 15px;text-align:center}
+    .sidebar-note .bow{font-size:23px}
+    .sidebar-note p{font-family:'Playfair Display',serif;color:var(--rose);font-size:15px;line-height:1.5;margin:8px 0 4px}
+    .sidebar-note small{font-size:10px;color:var(--muted)}
+    main{flex:1;min-width:0;padding:34px clamp(20px,4vw,55px);max-width:1600px;margin:0 auto}
+    .topline{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px}
+    .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--pink-500);font-weight:700}
+    h1{font-family:'Playfair Display',serif;font-size:clamp(27px,3vw,36px);font-weight:600;color:var(--rose);margin:7px 0 5px}
+    .subtitle{font-size:13px;color:var(--muted);margin:0;line-height:1.6}
+    .date-chip{background:white;border:1px solid var(--line);border-radius:30px;padding:10px 15px;font-size:12px;color:var(--rose);white-space:nowrap;box-shadow:var(--shadow)}
+    .view-section{display:none}.view-section.active{display:block}
+    .hero{position:relative;overflow:hidden;background:linear-gradient(115deg,#f9dce9,#fff0f6 65%,#fff8fb);border:1px solid #f6dce7;border-radius:23px;padding:27px 30px;margin-bottom:22px;min-height:148px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+    .hero:after{content:'୨୧';position:absolute;right:28%;top:13px;font-size:36px;color:rgba(217,117,160,.22);transform:rotate(-15deg)}
+    .hero h2{font-family:'Playfair Display',serif;font-size:25px;color:var(--rose);margin:0 0 7px}
+    .hero p{font-size:12px;color:#987987;margin:0;line-height:1.7}
+    .hero-art{font-size:58px;margin-right:12px;filter:drop-shadow(0 7px 5px rgba(169,87,121,.12))}
+    .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin-bottom:22px}
+    .stat-card,.card{background:var(--white);border:1px solid var(--line);border-radius:19px;box-shadow:var(--shadow)}
+    .stat-card{padding:18px 20px;display:flex;align-items:center;gap:14px}
+    .stat-icon{width:43px;height:43px;display:grid;place-items:center;border-radius:15px;background:var(--pink-100);font-size:20px}
+    .stat-title{font-size:11px;color:var(--muted);margin-bottom:5px}
+    .stat-value{font-family:'Playfair Display',serif;font-size:26px;color:var(--rose)}
+    .content-grid{display:grid;grid-template-columns:minmax(260px, .82fr) minmax(0,1.5fr);gap:18px;align-items:start}
+    .card{padding:22px;margin-bottom:18px}
+    .card-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+    .card h2{font-family:'Playfair Display',serif;font-size:19px;font-weight:600;color:var(--rose);margin:0}
+    .tiny-label{font-size:10px;color:var(--pink-500);background:var(--pink-100);padding:6px 10px;border-radius:20px}
+    .form-group{display:grid;gap:13px}
+    .field label{display:block;font-size:11px;font-weight:700;color:#967786;margin:0 0 7px 2px}
+    input,select{width:100%;border:1px solid var(--line);background:#fffafb;color:var(--ink);border-radius:11px;padding:11px 12px;font-size:12px;outline:none;transition:.2s}
+    input:focus,select:focus{border-color:var(--pink-400);box-shadow:0 0 0 3px rgba(233,149,184,.13)}
+    input::placeholder{color:#c3adb7}
+    .btn-submit{border:0;background:var(--pink-500);color:white;border-radius:12px;padding:12px 15px;font-size:12px;font-weight:700;box-shadow:0 6px 14px rgba(217,117,160,.2);transition:.2s}
+    .btn-submit:hover{background:var(--rose);transform:translateY(-1px)}
+    .task-list{display:grid;gap:10px}
+    .task-item{border:1px solid var(--line);background:#fffdfd;border-radius:14px;padding:13px 13px;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:.2s}
+    .task-item:hover{border-color:var(--pink-300);transform:translateY(-1px)}
+    .task-item.completed{background:#fff9fc;opacity:.68}
+    .task-item.completed .task-title{text-decoration:line-through;color:#ad9aa3}
+    .task-left{display:flex;align-items:center;gap:11px;min-width:0}
+    .task-checkbox{appearance:none;flex-shrink:0;width:19px;height:19px;padding:0;border:1.5px solid var(--pink-300);border-radius:7px;background:white;cursor:pointer;display:grid;place-items:center}
+    .task-checkbox:checked{background:var(--pink-400);border-color:var(--pink-400)}
+    .task-checkbox:checked:after{content:'✓';font-size:12px;color:white;font-weight:700}
+    .task-meta{min-width:0}
+    .task-title{font-size:12px;font-weight:700;color:#765565;overflow-wrap:anywhere}
+    .task-sub{display:flex;flex-wrap:wrap;gap:5px 11px;font-size:10px;color:var(--muted);margin-top:5px}
+    .task-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+    .tag{font-size:9px;font-weight:700;padding:6px 9px;border-radius:20px;white-space:nowrap}
+    .tag-Segera{background:#ffe5ec;color:#b84f78}.tag-Sedang{background:#fff1d9;color:#a47a36}.tag-Santai{background:#e8f4e9;color:#62866a}
+    .btn-delete{border:0;background:transparent;color:#c4a8b5;border-radius:8px;padding:5px;font-size:15px}
+    .btn-delete:hover{background:#fff0f4;color:#bd547d}
+    .empty{text-align:center;padding:28px 12px;color:#b49eaa;font-size:12px;line-height:1.8}
+    .empty span{display:block;font-size:27px;margin-bottom:5px}
+    .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:15px;flex-wrap:wrap}
+    .toolbar input{flex:1;min-width:180px}
+    .toolbar select{width:auto;min-width:135px}
+    .subject-block{margin-bottom:15px}
+    .subject-title{font-family:'Playfair Display',serif;color:var(--rose);font-size:17px;margin-bottom:13px;padding-bottom:10px;border-bottom:1px dashed var(--pink-200);display:flex;justify-content:space-between;gap:10px}
+    .subject-count{font:600 10px 'DM Sans',sans-serif;color:var(--pink-500);background:var(--pink-100);padding:5px 9px;border-radius:20px}
+    .progress-wrap{margin-top:17px}
+    .progress-label{display:flex;justify-content:space-between;color:var(--muted);font-size:10px;margin-bottom:7px}
+    .progress-track{height:8px;border-radius:20px;background:var(--pink-100);overflow:hidden}
+    .progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--pink-300),var(--pink-500));border-radius:20px;transition:width .3s}
+    .footer-note{text-align:center;font-size:10px;color:#c0a8b4;padding:12px 0 4px}
+    @media(max-width:950px){.content-grid{grid-template-columns:1fr}.hero:after{right:20%}}
+    @media(max-width:650px){.app{display:block}aside{width:100%;padding:15px 16px;gap:15px}.brand{padding:0 5px}.nav-label,.sidebar-note{display:none}.nav-list{display:flex;gap:5px}.nav-item{justify-content:center;padding:10px 8px;font-size:11px;flex:1}.nav-icon{font-size:15px}main{padding:23px 15px}.topline{align-items:flex-start}.date-chip{font-size:10px;padding:8px 10px}.hero{padding:21px;min-height:130px}.hero-art{font-size:43px}.hero h2{font-size:21px}.stats{gap:8px}.stat-card{padding:13px 10px;gap:8px;display:block}.stat-icon{width:34px;height:34px;font-size:16px;margin-bottom:8px}.stat-title{font-size:9px}.stat-value{font-size:22px}.card{padding:17px}.task-item{align-items:flex-start}.task-right{gap:4px}.tag{font-size:8px;padding:5px 7px}}
+  </style>
 </head>
 <body>
+<div class="app">
+  <aside>
+    <div class="brand">
+      <div class="brand-mark">🎀</div>
+      <div><div class="brand-name">BloomStudy</div><div class="brand-sub">YOUR LITTLE STUDY SPACE</div></div>
+    </div>
+    <div>
+      <div class="nav-label">Workspace</div>
+      <ul class="nav-list">
+        <li><button class="nav-item active" onclick="switchTab('dashboard',this)"><span class="nav-icon">♡</span> Dashboard</button></li>
+        <li><button class="nav-item" onclick="switchTab('all-tasks',this)"><span class="nav-icon">✎</span> All Tasks</button></li>
+        <li><button class="nav-item" onclick="switchTab('subjects',this)"><span class="nav-icon">୨୧</span> Subjects</button></li>
+      </ul>
+    </div>
+    <div class="sidebar-note">
+      <div class="bow">🎀</div>
+      <p>Little steps<br>every day!</p>
+      <small>YOU'RE DOING AMAZING ♡</small>
+    </div>
+  </aside>
 
-    <!-- Sidebar Dashboard -->
-    <aside>
-        <div class="brand">📅 StudyLife</div>
-        <ul class="nav-list">
-            <li class="nav-item active" onclick="switchTab('dashboard', this)">📊 Dashboard</li>
-            <li class="nav-item" onclick="switchTab('all-tasks', this)">📝 All Tasks</li>
-            <li class="nav-item" onclick="switchTab('subjects', this)">📚 Subjects</li>
-        </ul>
-    </aside>
+  <main>
+    <div class="topline">
+      <div><div class="eyebrow">A little progress is still progress ✧</div><h1 id="pageTitle">Your Study Dashboard</h1><p class="subtitle" id="pageSubtitle">Atur tugasmu, pelan-pelan sampai semuanya selesai.</p></div>
+      <div class="date-chip" id="todayDate">♡ Today</div>
+    </div>
 
-    <!-- Main Content -->
-    <main>
-        <!-- TAB 1: DASHBOARD -->
-        <div id="view-dashboard" class="view-section active">
-            <header>
-                <h1>Dashboard Planner</h1>
-                <p>Selamat datang kembali! Ini ringkasan tugas dan deadline kamu.</p>
-            </header>
-
-            <div class="dashboard-grid">
-                <div class="stat-card">
-                    <span class="title">Total Tugas</span>
-                    <span class="value" id="statTotal">0</span>
-                </div>
-                <div class="stat-card">
-                    <span class="title">Belum Selesai</span>
-                    <span class="value" id="statPending" style="color: var(--warning);">0</span>
-                </div>
-                <div class="stat-card">
-                    <span class="title">Selesai</span>
-                    <span class="value" id="statDone" style="color: var(--success);">0</span>
-                </div>
-            </div>
-
-            <div class="content-section">
-                <!-- Form Input -->
-                <div class="card">
-                    <h2>➕ Tambah Tugas Baru</h2>
-                    <div class="form-group">
-                        <div>
-                            <label style="font-size: 12px; font-weight:600; color:var(--text-muted)">Nama Tugas</label>
-                            <input type="text" id="taskTitle" placeholder="Misal: Project Matdis" />
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; font-weight:600; color:var(--text-muted)">Mata Kuliah</label>
-                            <input type="text" id="taskSubject" placeholder="Misal: Matdis" />
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; font-weight:600; color:var(--text-muted)">Deadline</label>
-                            <input type="date" id="taskDate" />
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; font-weight:600; color:var(--text-muted)">Prioritas</label>
-                            <select id="taskPriority">
-                                <option value="Santai">Santai</option>
-                                <option value="Sedang" selected>Sedang</option>
-                                <option value="Segera">Segera</option>
-                            </select>
-                        </div>
-                        <button class="btn-submit" onclick="addTask()">Simpan Tugas</button>
-                    </div>
-                </div>
-
-                <!-- Recent Task List -->
-                <div class="card">
-                    <h2>📋 Ringkasan Tugas</h2>
-                    <div class="task-list" id="dashboardTaskList"></div>
-                </div>
-            </div>
+    <section id="view-dashboard" class="view-section active">
+      <div class="hero">
+        <div><h2>Make today lovely! ♡</h2><p>One task at a time. You don't have to do everything at once.<br>Semangat belajar, kamu pasti bisa!</p></div>
+        <div class="hero-art">🌷</div>
+      </div>
+      <div class="stats">
+        <div class="stat-card"><div class="stat-icon">📚</div><div><div class="stat-title">Total tasks</div><div class="stat-value" id="statTotal">0</div></div></div>
+        <div class="stat-card"><div class="stat-icon">📝</div><div><div class="stat-title">Still to do</div><div class="stat-value" id="statPending">0</div></div></div>
+        <div class="stat-card"><div class="stat-icon">🌸</div><div><div class="stat-title">Completed</div><div class="stat-value" id="statDone">0</div></div></div>
+      </div>
+      <div class="content-grid">
+        <div class="card">
+          <div class="card-heading"><h2>Add a new task</h2><span class="tiny-label">♡ let's do this</span></div>
+          <form class="form-group" id="taskForm">
+            <div class="field"><label for="taskTitle">Task name</label><input id="taskTitle" type="text" placeholder="e.g. Finish Matdis assignment" maxlength="100" required></div>
+            <div class="field"><label for="taskSubject">Subject / course</label><input id="taskSubject" type="text" placeholder="e.g. Matematika Diskrit"></div>
+            <div class="field"><label for="taskDate">Deadline</label><input id="taskDate" type="date" required></div>
+            <div class="field"><label for="taskPriority">Priority</label><select id="taskPriority"><option value="Santai">Santai · low</option><option value="Sedang" selected>Sedang · medium</option><option value="Segera">Segera · high</option></select></div>
+            <button class="btn-submit" type="submit">＋ Save my task</button>
+          </form>
+          <div class="progress-wrap"><div class="progress-label"><span>Study progress</span><strong id="progressText">0%</strong></div><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div></div>
         </div>
-
-        <!-- TAB 2: ALL TASKS -->
-        <div id="view-all-tasks" class="view-section">
-            <header>
-                <h1>All Tasks</h1>
-                <p>Semua daftar tugas perkuliahan kamu ada di sini.</p>
-            </header>
-            <div class="card">
-                <h2>📋 Semua Tugas</h2>
-                <div class="task-list" id="allTaskList"></div>
-            </div>
+        <div class="card">
+          <div class="card-heading"><h2>Recent tasks</h2><span class="tiny-label">your to-do list</span></div>
+          <div class="task-list" id="dashboardTaskList"></div>
         </div>
+      </div>
+      <div class="footer-note">made with ♡ for your study days</div>
+    </section>
 
-        <!-- TAB 3: SUBJECTS -->
-        <div id="view-subjects" class="view-section">
-            <header>
-                <h1>Subjects Overview</h1>
-                <p>Tugas yang dikelompokkan berdasarkan mata kuliah/subjek.</p>
-            </header>
-            <div id="subjectsContainer"></div>
+    <section id="view-all-tasks" class="view-section">
+      <div class="card">
+        <div class="card-heading"><h2>All your tasks</h2><span class="tiny-label">every little thing counts</span></div>
+        <div class="toolbar"><input id="searchTask" type="search" placeholder="Search your tasks..."><select id="filterPriority"><option value="">All priorities</option><option value="Segera">Segera</option><option value="Sedang">Sedang</option><option value="Santai">Santai</option></select><select id="filterStatus"><option value="">All status</option><option value="pending">Not completed</option><option value="done">Completed</option></select></div>
+        <div class="task-list" id="allTaskList"></div>
+      </div>
+    </section>
+
+    <section id="view-subjects" class="view-section">
+      <div class="card"><div class="card-heading"><h2>Subjects overview</h2><span class="tiny-label">organized & pretty</span></div><div id="subjectsContainer"></div></div>
+    </section>
+  </main>
+</div>
+<script>
+  let tasks = [];
+  try { tasks = JSON.parse(localStorage.getItem('studylife_tasks')) || []; } catch (error) { tasks = []; }
+
+  const pageInfo = {
+    dashboard: ['Your Study Dashboard', 'Atur tugasmu, pelan-pelan sampai semuanya selesai.'],
+    'all-tasks': ['All Your Tasks', 'Semua daftar tugas perkuliahanmu ada di satu tempat.'],
+    subjects: ['Your Subjects', 'Lihat tugas berdasarkan mata kuliah supaya lebih rapi.']
+  };
+
+  function switchTab(tabName, element) {
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    element.classList.add('active');
+    document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active'));
+    document.getElementById(`view-${tabName}`).classList.add('active');
+    document.getElementById('pageTitle').textContent = pageInfo[tabName][0];
+    document.getElementById('pageSubtitle').textContent = pageInfo[tabName][1];
+    render();
+  }
+
+  function saveAndRender() {
+    localStorage.setItem('studylife_tasks', JSON.stringify(tasks));
+    render();
+  }
+
+  document.getElementById('todayDate').textContent = '♡ ' + new Date().toLocaleDateString('id-ID', {
+    weekday:'long', day:'numeric', month:'long', year:'numeric'
+  });
+
+  document.getElementById('taskForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const title = document.getElementById('taskTitle').value.trim();
+    const subject = document.getElementById('taskSubject').value.trim() || 'Umum';
+    const date = document.getElementById('taskDate').value;
+    const priority = document.getElementById('taskPriority').value;
+
+    if (!title || !date) {
+      alert('Nama tugas dan deadline wajib diisi, ya! ♡');
+      return;
+    }
+
+    tasks.push({ id: Date.now(), title, subject, date, priority, completed: false });
+    this.reset();
+    document.getElementById('taskPriority').value = 'Sedang';
+    saveAndRender();
+  });
+
+  function toggleTask(id) {
+    tasks = tasks.map(task => task.id === id ? {...task, completed: !task.completed} : task);
+    saveAndRender();
+  }
+
+  function deleteTask(id) {
+    if (!confirm('Hapus tugas ini dari planner?')) return;
+    tasks = tasks.filter(task => task.id !== id);
+    saveAndRender();
+  }
+
+  function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g, char => ({
+      '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+    }[char]));
+  }
+
+  function formatDate(dateString) {
+    if (!dateString) return '-';
+    const date = new Date(dateString + 'T00:00:00');
+    return date.toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'});
+  }
+
+  function createTaskHTML(task) {
+    const title = escapeHTML(task.title);
+    const subject = escapeHTML(task.subject);
+    const priority = ['Santai','Sedang','Segera'].includes(task.priority) ? task.priority : 'Sedang';
+    return `
+      <div class="task-item ${task.completed ? 'completed' : ''}">
+        <div class="task-left">
+          <input aria-label="Tandai ${title} selesai" type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${Number(task.id)})">
+          <div class="task-meta">
+            <div class="task-title">${title}</div>
+            <div class="task-sub"><span>♡ ${subject}</span><span>📅 ${formatDate(task.date)}</span></div>
+          </div>
         </div>
-    </main>
+        <div class="task-right">
+          <span class="tag tag-${priority}">${priority}</span>
+          <button class="btn-delete" aria-label="Hapus tugas" title="Delete task" onclick="deleteTask(${Number(task.id)})">♡</button>
+        </div>
+      </div>`;
+  }
 
-    <script>
-        let tasks = JSON.parse(localStorage.getItem('studylife_tasks')) || [];
+  function emptyMessage(message) {
+    return `<div class="empty"><span>🎀</span>${message}</div>`;
+  }
 
-        function switchTab(tabName, el) {
-            // Update navigasi sidebar
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            el.classList.add('active');
+  function render() {
+    const total = tasks.length;
+    const done = tasks.filter(task => task.completed).length;
+    const pending = total - done;
+    const progress = total ? Math.round(done / total * 100) : 0;
 
-            // Update tampilan halaman
-            document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active'));
-            document.getElementById(`view-${tabName}`).classList.add('active');
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statPending').textContent = pending;
+    document.getElementById('statDone').textContent = done;
+    document.getElementById('progressText').textContent = progress + '%';
+    document.getElementById('progressFill').style.width = progress + '%';
 
-            render();
-        }
+    const sortedTasks = [...tasks].sort((a,b) => a.date.localeCompare(b.date));
+    document.getElementById('dashboardTaskList').innerHTML = sortedTasks.length
+      ? sortedTasks.slice(0,5).map(createTaskHTML).join('')
+      : emptyMessage('Belum ada tugas. Yuk tambahkan tugas pertamamu!');
 
-        function saveAndRender() {
-            localStorage.setItem('studylife_tasks', JSON.stringify(tasks));
-            render();
-        }
+    const search = (document.getElementById('searchTask')?.value || '').toLowerCase();
+    const priorityFilter = document.getElementById('filterPriority')?.value || '';
+    const statusFilter = document.getElementById('filterStatus')?.value || '';
+    const filtered = sortedTasks.filter(task => {
+      const matchesSearch = (task.title + ' ' + task.subject).toLowerCase().includes(search);
+      const matchesPriority = !priorityFilter || task.priority === priorityFilter;
+      const matchesStatus = !statusFilter || (statusFilter === 'done' ? task.completed : !task.completed);
+      return matchesSearch && matchesPriority && matchesStatus;
+    });
+    document.getElementById('allTaskList').innerHTML = filtered.length
+      ? filtered.map(createTaskHTML).join('')
+      : emptyMessage(total ? 'Tidak ada tugas yang cocok dengan pencarianmu.' : 'Belum ada tugas tersimpan.');
 
-        function addTask() {
-            const title = document.getElementById('taskTitle').value.trim();
-            const subject = document.getElementById('taskSubject').value.trim() || 'Umum';
-            const date = document.getElementById('taskDate').value;
-            const priority = document.getElementById('taskPriority').value;
+    const subjectsContainer = document.getElementById('subjectsContainer');
+    subjectsContainer.innerHTML = '';
+    if (!tasks.length) {
+      subjectsContainer.innerHTML = emptyMessage('Mata kuliahmu akan muncul di sini setelah kamu menambahkan tugas.');
+      return;
+    }
 
-            if (!title || !date) {
-                alert('Nama tugas dan deadline wajib diisi!');
-                return;
-            }
+    const grouped = {};
+    tasks.forEach(task => {
+      const subject = task.subject || 'Umum';
+      if (!grouped[subject]) grouped[subject] = [];
+      grouped[subject].push(task);
+    });
 
-            tasks.push({
-                id: Date.now(),
-                title,
-                subject,
-                date,
-                priority,
-                completed: false
-            });
+    Object.keys(grouped).sort((a,b) => a.localeCompare(b)).forEach(subject => {
+      const subjectTasks = grouped[subject];
+      const block = document.createElement('div');
+      block.className = 'subject-block';
+      block.innerHTML = `
+        <div class="subject-title"><span>♡ ${escapeHTML(subject)}</span><span class="subject-count">${subjectTasks.length} tasks</span></div>
+        <div class="task-list">${subjectTasks.sort((a,b) => a.date.localeCompare(b.date)).map(createTaskHTML).join('')}</div>`;
+      subjectsContainer.appendChild(block);
+    });
+  }
 
-            document.getElementById('taskTitle').value = '';
-            document.getElementById('taskSubject').value = '';
-            document.getElementById('taskDate').value = '';
-
-            saveAndRender();
-        }
-
-        function toggleTask(id) {
-            tasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
-            saveAndRender();
-        }
-
-        function deleteTask(id) {
-            tasks = tasks.filter(t => t.id !== id);
-            saveAndRender();
-        }
-
-        function createTaskHTML(t) {
-            return `
-                <div class="task-item ${t.completed ? 'completed' : ''}">
-                    <div class="task-left">
-                        <input type="checkbox" class="task-checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask(${t.id})">
-                        <div class="task-meta">
-                            <span class="task-title">${t.title}</span>
-                            <div class="task-sub">
-                                <span>📖 ${t.subject}</span>
-                                <span>📅 ${t.date}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span class="tag tag-${t.priority}">${t.priority}</span>
-                        <button class="btn-delete" onclick="deleteTask(${t.id})">🗑️</button>
-                    </div>
-                </div>
-            `;
-        }
-
-        function render() {
-            // 1. Render Dashboard
-            document.getElementById('statTotal').innerText = tasks.length;
-            document.getElementById('statPending').innerText = tasks.filter(t => !t.completed).length;
-            document.getElementById('statDone').innerText = tasks.filter(t => t.completed).length;
-
-            const dashList = document.getElementById('dashboardTaskList');
-            if (tasks.length === 0) {
-                dashList.innerHTML = `<p style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 20px 0;">Belum ada tugas. Yuk tambah tugas pertama kamu!</p>`;
-            } else {
-                dashList.innerHTML = tasks.slice(0, 5).map(t => createTaskHTML(t)).join('');
-            }
-
-            // 2. Render All Tasks
-            const allList = document.getElementById('allTaskList');
-            if (tasks.length === 0) {
-                allList.innerHTML = `<p style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 20px 0;">Belum ada tugas tersimpan.</p>`;
-            } else {
-                allList.innerHTML = tasks.map(t => createTaskHTML(t)).join('');
-            }
-
-            // 3. Render Subjects View
-            const subjectsContainer = document.getElementById('subjectsContainer');
-            subjectsContainer.innerHTML = '';
-
-            if (tasks.length === 0) {
-                subjectsContainer.innerHTML = `<div class="card"><p style="color: var(--text-muted); font-size: 14px; text-align: center;">Belum ada mata kuliah.</p></div>`;
-            } else {
-                // Grouping berdasarkan Subject
-                const grouped = {};
-                tasks.forEach(t => {
-                    if (!grouped[t.subject]) grouped[t.subject] = [];
-                    grouped[t.subject].push(t);
-                });
-
-                for (const subject in grouped) {
-                    const block = document.createElement('div');
-                    block.className = 'card subject-block';
-                    block.innerHTML = `
-                        <div class="subject-title">📖 ${subject} (${grouped[subject].length} Tugas)</div>
-                        <div class="task-list">
-                            ${grouped[subject].map(t => createTaskHTML(t)).join('')}
-                        </div>
-                    `;
-                    subjectsContainer.appendChild(block);
-                }
-            }
-        }
-
-        render();
-    </script>
+  document.getElementById('searchTask').addEventListener('input', render);
+  document.getElementById('filterPriority').addEventListener('change', render);
+  document.getElementById('filterStatus').addEventListener('change', render);
+  render();
+</script>
 </body>
 </html>
